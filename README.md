@@ -1,20 +1,18 @@
 # Intersystems IRIS provider for Apache Airflow
 <img width="630" height="266" alt="image" src="https://github.com/user-attachments/assets/ffe84efb-7e27-43b3-9861-31b1a0f60d3b" />
 
-#### Production-ready integration between Apache Airflow and InterSystems IRIS Data Platform.
-
 [![PyPI version](https://badge.fury.io/py/airflow-provider-iris.svg)](https://badge.fury.io/py/airflow-provider-iris)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/airflow-provider-iris)](https://pypistats.org/packages/airflow-provider-iris)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Contest Entry](https://img.shields.io/badge/InterSystems-Developer%20Contest%202025-FF6A00.svg)](https://openexchange.intersystems.com/contest/current)
+#### Production-ready integration between Apache Airflow and InterSystems IRIS Data Platform.
 <img width="1918" height="968" alt="image" src="https://github.com/user-attachments/assets/49c25327-f968-4f12-811b-c6cfd2de6dfc" />
+
 Seamlessly orchestrate InterSystems IRIS workloads from Apache Airflow:
 - Native SQL execution with full templating support
 - Reliable bulk data loading via SQLAlchemy + pandas
 - Full connection management with Airflow Connections
 - Built for production ETL, analytics, and healthcare workflows
-
-Perfect for healthcare (HL7/FHIR), finance, logistics, and any IRIS-powered enterprise.
 
 ---
 
@@ -35,18 +33,10 @@ Perfect for healthcare (HL7/FHIR), finance, logistics, and any IRIS-powered ente
 pip install airflow-provider-iris
 ```
 ### Quick Start
+
 Configure Connection in Airflow UI
 Go to Admin → Connections → Add Connection
 <img width="1127" height="876" alt="image" src="https://github.com/user-attachments/assets/265028d8-733e-4f16-975f-72634b12fd04" />
-
-Conn Id: iris_default
-Conn Type: Intersystems IRIS
-Host: localhost
-Port: 1972
-User: USER (this sets the IRIS namespace)
-Login: _SYSTEM
-Password: SYS
-<img width="1127" height="873" alt="image" src="https://github.com/user-attachments/assets/0b592f94-63e7-40c5-8cde-ad1dffed9f39" />
 
 ### Example DAGs (Included in examples/)
 1. Raw SQL Operator – Simple & Powerful
@@ -164,7 +154,7 @@ with DAG(
     orm_create >> orm_read
 ```
 3. Synthetic Data Generator → Bulk Load
-Generate realistic sales data and load 1000+ rows efficiently.
+Generate realistic sales data and load efficiently.
 
 ```
 from datetime import datetime, timedelta
