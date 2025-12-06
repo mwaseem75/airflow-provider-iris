@@ -1,9 +1,10 @@
 from setuptools import setup
+from pathlib import Path
+__version__ = "0.1.0"
 
-__version__ = "0.0.0+develop"
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 """Perform the package airflow-provider-iris setup."""
 setup(
