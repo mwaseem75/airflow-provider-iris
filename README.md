@@ -1,4 +1,4 @@
-# Intersystems IRIS provider for Apache Airflow
+<h1>Intersystems IRIS provider for Apache Airflow</h1>
 <img width="630" height="266" alt="image" src="https://github.com/mwaseem75/airflow-provider-iris/blob/main/images/airflowlogo.png" />
 
 [![PyPI version](https://badge.fury.io/py/airflow-provider-iris.svg)](https://badge.fury.io/py/airflow-provider-iris)
