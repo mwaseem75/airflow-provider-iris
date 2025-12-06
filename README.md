@@ -32,12 +32,36 @@ Seamlessly orchestrate InterSystems IRIS workloads from Apache Airflow:
 ```bash
 pip install airflow-provider-iris
 ```
-### Quick Start
+### Quick Start (Create IRIS connection)
 
 Configure Connection in Airflow UI
 Go to Admin → Connections → Add Connection
 <img width="1127" height="876" alt="image" src="https://github.com/user-attachments/assets/265028d8-733e-4f16-975f-72634b12fd04" />
 
+Use your InterSystems IRIS connection by setting the `iris_conn_id` parameter in any of the provided operators.
+
+In the example below, the `IrisSQLOperator` uses the `iris_conn_id` parameter to connect to the IRIS instance when the DAG is defined: 
+```python
+from airflow_provider_iris.operators.iris_operator import IrisSQLOperator
+
+with DAG(
+    dag_id="01_IRIS_Raw_SQL_Demo_Local",
+    start_date=datetime(2025, 12, 1),
+    schedule=None,
+    catchup=False,
+    tags=["iris-contest"],
+) as dag:
+    
+    create_table = IrisSQLOperator(
+        task_id="create_table",
+        iris_conn_id="ContainerInstance",
+        sql="""CREATE TABLE IF NOT EXISTS Test.AirflowDemo (
+               ID INTEGER IDENTITY PRIMARY KEY,
+               Message VARCHAR(200),
+               RunDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+    )
+```
 ### Example DAGs (Included in examples/)
 1. Raw SQL Operator – Simple & Powerful
 ```python
