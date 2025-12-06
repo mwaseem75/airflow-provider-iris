@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Contest Entry](https://img.shields.io/badge/InterSystems-Developer%20Contest%202025-FF6A00.svg)](https://openexchange.intersystems.com/contest/current)
 #### Production-ready integration between Apache Airflow and InterSystems IRIS Data Platform.
-<img width="1918" height="968" alt="image" src="https://github.com/mwaseem75/airflow-provider-iris/blob/main/images/mainscreenshot.png" />
+<img width="1918" height="968" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/mainscreenshot.png" />
 
 Seamlessly orchestrate InterSystems IRIS workloads from Apache Airflow:
 - Native SQL execution with full templating support
@@ -36,7 +36,7 @@ pip install airflow-provider-iris
 
 Configure Connection in Airflow UI
 Go to Admin → Connections → Add Connection
-<img width="1127" height="876" alt="image" src="https://github.com/mwaseem75/airflow-provider-iris/blob/main/images/connection.png" />
+<img width="1127" height="876" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/connection.png" />
 
 Use your InterSystems IRIS connection by setting the `iris_conn_id` parameter in any of the provided operators.
 
