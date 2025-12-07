@@ -5,25 +5,20 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/airflow-provider-iris)](https://pypistats.org/packages/airflow-provider-iris)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Contest Entry](https://img.shields.io/badge/InterSystems-Developer%20Contest%202025-FF6A00.svg)](https://openexchange.intersystems.com/contest/current)
-#### Production-ready integration between Apache Airflow and InterSystems IRIS Data Platform.
-<img width="1918" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/mainscreenshot.png" />
 
-Seamlessly orchestrate InterSystems IRIS workloads from Apache Airflow:
-- Native SQL execution with full templating support
-- Reliable bulk data loading via SQLAlchemy + pandas
-- Full connection management with Airflow Connections
-- Built for production ETL, analytics, and healthcare workflows
+InterSystems IRIS Provider for Apache Airflow enables seamless integration between Airflow workflows and the InterSystems IRIS data platform. It provides native connection support and operators for executing IRIS SQL and automating IRIS-driven tasks within modern ETL/ELT pipelines.
 
----
+Designed for reliability and ease of use, this provider helps data engineers and developers build scalable, production-ready workflows for healthcare, interoperability, analytics, and enterprise data processing—powered by InterSystems IRIS.
 
 ### Features
+* ✔️ `IrisHook` – for managing IRIS connections
+* ✔️ `IrisSQLOperator` – for running SQL queries
+* ✔️ Support for both SELECT/CTE and DML statements
+* ✔️ Native Airflow connection UI customization
+* ✔️ Examples for real-world ETL patterns
 
-- `IrisSQLOperator` – Execute raw SQL/ObjectScript with Jinja templating
-- `IrisHook` – SQLAlchemy-compatible hook for pandas, ORM, and custom logic
-- Full support for IRIS namespaces, schemas, and authentication
-- Works reliably with `pandas.to_sql()` (critical fix: `chunksize=1` for IRIS compatibility)
-- Zero external dependencies beyond standard Airflow & IRIS Python drivers
-- Comprehensive examples for real-world ETL patterns
+### Application Layout
+<img width="1918" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/mainscreenshot.png" />
 
 ---
 
@@ -36,6 +31,14 @@ pip install airflow-provider-iris
 
 Configure Connection in Airflow UI
 Go to Admin → Connections → Add Connection
+* Conn Id: **Connection ID**
+* Description : **Connection Description**
+* Conn Type: **InterSystems IRIS**
+* Host: **IRIS server hostname**
+* Username: **User Name**
+* Password: **Password**
+* Port : **IRIS Superserver Port**
+* Namespace : **Namespace**
 <img width="1127" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/connection.png" />
 
 Use your InterSystems IRIS connection by setting the `iris_conn_id` parameter in any of the provided operators.
@@ -62,6 +65,21 @@ with DAG(
             )""",
     )
 ```
+## Provider Parameters & Connection Configuration
+
+### IrisSQLOperator Parameters
+
+When you create a connection in Airflow UI (Admin → Connections), use the following fields:
+
+| Parameter       | Description                                                                 | Type / Default     | Required | 
+|-----------------|-----------------------------------------------------------------------------|----------------------------|----------|
+| **sql**         | SQL query or template                                                       | `str`              | Yes      |
+| **iris_conn_id**| IRIS connection identifier                                                | `str` / `iris_default`  | Yes      |
+| **task_id**     | DAG task name                                                             | `str`  | Yes      |
+| **autocommit**  | Commit changes automatically                                                | `bool` / `True` | No |
+| ****kwargs**    | Airflow BaseOperator arguments                                     | --    | No       |
+
+
 ### Example DAGs (Included in examples/)
 1. Raw SQL Operator – Simple & Powerful
 ```python
