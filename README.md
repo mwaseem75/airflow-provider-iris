@@ -16,10 +16,11 @@
 ## Overview
 <img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/airflowlogo.png" />
 
-[![PyPI version](https://badge.fury.io/py/airflow-provider-iris.svg)](https://badge.fury.io/py/airflow-provider-iris)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/airflow-provider-iris)](https://pypistats.org/packages/airflow-provider-iris)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Contest Entry](https://img.shields.io/badge/InterSystems-Developer%20Contest%202025-FF6A00.svg)](https://openexchange.intersystems.com/contest/current)
+[![one](https://img.shields.io/badge/Platform-InterSystems%20IRIS-blue)](https://www.intersystems.com/data-platform/)
+[![one](https://img.shields.io/badge/Workflow%20Orchestration-Aoache%20Airflow-success)](https://airflow.apache.org/)
+[![one](https://img.shields.io/badge/PyPI%20Package-airflow%20provider%20iris-yellowgreen)](https://pypi.org/project/airflow-provider-iris/)
+[![one](https://img.shields.io/badge/PyPI%20Availabe%20on-Open%20Exchange-blue)](https:///)
+[![License](https://img.shields.io/badge/License-Apache%202.0-00b2a9.svg)](https://opensource.org/licenses/Apache-2.0)
 
 InterSystems IRIS Provider for Apache Airflow enables seamless integration between Airflow workflows and the InterSystems IRIS data platform. It provides native connection support and operators for executing IRIS SQL and automating IRIS-driven tasks within modern ETL/ELT pipelines.
 
