@@ -1,7 +1,5 @@
-<h1>InterSystems IRIS provider for Apache Airflow</h1>
-
+# airflow-provider-iris
 ---
-
 ## Table of Contents
 
 - [Overview](#overview)
