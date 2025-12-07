@@ -1,19 +1,4 @@
 # airflow-provider-iris
----
-## Table of Contents
-
-- [Overview](#overview)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Connector Parameters](#connector-parameters)
-- [Examples](#examples)
-  - [01_IRIS_Raw_SQL_Demo](#1-iris-raw-sql-demo)
-  - [02_IRIS_ORM_Demo](#2-iris-orm-demo)
-  - [03_IRIS_Load_Synthetic_Data_Demo](#3-synthetic-sales-pipeline)
-
----
-<a name="overview"></a>
-## Overview
 <img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/airflowlogo.png" />
 
 [![one](https://img.shields.io/badge/Platform-InterSystems%20IRIS-blue)](https://www.intersystems.com/data-platform/)
@@ -21,7 +6,21 @@
 [![one](https://img.shields.io/badge/PyPI%20Package-airflow%20provider%20iris-yellowgreen)](https://pypi.org/project/airflow-provider-iris/)
 [![one](https://img.shields.io/badge/PyPI%20Availabe%20on-Open%20Exchange-blue)](https:///)
 [![License](https://img.shields.io/badge/License-Apache%202.0-00b2a9.svg)](https://opensource.org/licenses/Apache-2.0)
+---
+## Table of Contents
 
+- [Overview](#1overview)
+- [Installation](#1installation)
+- [Quick Start](#1quick-start)
+- [Connector Parameters](#1connector-parameters)
+- [Examples](#1examples)
+  - [01_IRIS_Raw_SQL_Demo](#11-iris-raw-sql-demo)
+  - [02_IRIS_ORM_Demo](#12-iris-orm-demo)
+  - [03_IRIS_Load_Synthetic_Data_Demo](#13-synthetic-sales-pipeline)
+
+---
+<a name="overview"></a>
+## Overview
 InterSystems IRIS Provider for Apache Airflow enables seamless integration between Airflow workflows and the InterSystems IRIS data platform. It provides native connection support and operators for executing IRIS SQL and automating IRIS-driven tasks within modern ETL/ELT pipelines.
 
 Designed for reliability and ease of use, this provider helps data engineers and developers build scalable, production-ready workflows for healthcare, interoperability, analytics, and enterprise data processing—powered by InterSystems IRIS.
