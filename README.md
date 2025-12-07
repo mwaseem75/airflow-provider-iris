@@ -1,4 +1,19 @@
 <h1>Intersystems IRIS provider for Apache Airflow</h1>
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Connector Parameters](#connector-parameters)
+- [Examples](#examples)
+  - [01_IRIS_Raw_SQL_Demo](#1-iris-raw-sql-demo)
+  - [02_IRIS_ORM_Demo](#2-iris-orm-demo)
+  - [03_IRIS_Load_Synthetic_Data_Demo](#3-synthetic-sales-pipeline)
+
+---
+## Overview
 <img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/airflowlogo.png" />
 
 [![PyPI version](https://badge.fury.io/py/airflow-provider-iris.svg)](https://badge.fury.io/py/airflow-provider-iris)
@@ -17,17 +32,14 @@ Designed for reliability and ease of use, this provider helps data engineers and
 * ✔️ Native Airflow connection UI customization
 * ✔️ Examples for real-world ETL patterns
 
-### Application Layout
-<img width="1918" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/mainscreenshot.png" />
-
 ---
 
-### Installation
+## Installation
 
 ```bash
 pip install airflow-provider-iris
 ```
-### Quick Start (Create IRIS connection)
+## Quick Start
 
 Configure Connection in Airflow UI
 Go to Admin → Connections → Add Connection
@@ -65,23 +77,22 @@ with DAG(
             )""",
     )
 ```
-## Provider Parameters & Connection Configuration
 
-### IrisSQLOperator Parameters
+## Connector Parameters
 
 When you create a connection in Airflow UI (Admin → Connections), use the following fields:
 
-| Parameter       | Description                                                                 | Type / Default     | Required | 
-|-----------------|-----------------------------------------------------------------------------|----------------------------|----------|
-| **sql**         | SQL query or template                                                       | `str`              | Yes      |
-| **iris_conn_id**| IRIS connection identifier                                                | `str` / `iris_default`  | Yes      |
-| **task_id**     | DAG task name                                                             | `str`  | Yes      |
-| **autocommit**  | Commit changes automatically                                                | `bool` / `True` | No |
-| ****kwargs**    | Airflow BaseOperator arguments                                     | --    | No       |
+| Parameter       | Description                                                            | Type / Default         | Required | 
+|-----------------|------------------------------------------------------------------------|------------------------|----------|
+| **sql**         | SQL query or template                                                  | `str`                  | Yes      |
+| **iris_conn_id**| IRIS connection identifier                                             | `str` / `iris_default` | Yes      |
+| **task_id**     | DAG task name                                                          | `str`                  | Yes      |
+| **autocommit**  | Commit changes automatically                                           | `bool` / `True`        | No       |
+| ****kwargs**    | Airflow BaseOperator arguments                                         | --                     | No       |
 
 
-### Example DAGs (Included in examples/)
-#### 1. Raw SQL Operator – Simple & Powerful
+## Examples
+### 1. IRIS Raw SQL Demo
 ```python
 # dags/01_IRIS_Raw_SQL_Demo.py
 from datetime import datetime
@@ -118,7 +129,7 @@ with DAG(
     create_table >> insert >> select
 ```
 
-#### 2. ORM + Pandas Integration (Real-World ETL)
+### 2. IRIS ORM Demo
 Uses SQLAlchemy + pandas with the only known reliable method for bulk inserts into IRIS.
 ```
 # dags/example_sqlalchemy_dag.py
@@ -195,7 +206,7 @@ with DAG(
 
     orm_create >> orm_read
 ```
-#### 3. Synthetic Data Generator → Bulk Load
+### 3. Synthetic Sales Pipeline
 Generate realistic sales data and load efficiently.
 
 ```
