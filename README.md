@@ -81,7 +81,7 @@ When you create a connection in Airflow UI (Admin → Connections), use the foll
 
 
 ### Example DAGs (Included in examples/)
-1. Raw SQL Operator – Simple & Powerful
+#### 1. Raw SQL Operator – Simple & Powerful
 ```python
 # dags/01_IRIS_Raw_SQL_Demo.py
 from datetime import datetime
@@ -118,7 +118,7 @@ with DAG(
     create_table >> insert >> select
 ```
 
-2. ORM + Pandas Integration (Real-World ETL)
+#### 2. ORM + Pandas Integration (Real-World ETL)
 Uses SQLAlchemy + pandas with the only known reliable method for bulk inserts into IRIS.
 ```
 # dags/example_sqlalchemy_dag.py
@@ -195,7 +195,7 @@ with DAG(
 
     orm_create >> orm_read
 ```
-3. Synthetic Data Generator → Bulk Load
+#### 3. Synthetic Data Generator → Bulk Load
 Generate realistic sales data and load efficiently.
 
 ```
