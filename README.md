@@ -12,6 +12,7 @@
   - [03_IRIS_Load_Synthetic_Data_Demo](#3-synthetic-sales-pipeline)
 
 ---
+<a name="overview"></a>
 ## Overview
 <img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/airflowlogo.png" />
 
@@ -33,12 +34,13 @@ Designed for reliability and ease of use, this provider helps data engineers and
 * ✔️ Examples for real-world ETL patterns
 
 ---
-
+<a name="installation"></a>
 ## Installation
 
 ```bash
 pip install airflow-provider-iris
 ```
+<a name="quick-start"></a>
 ## Quick Start
 
 Configure Connection in Airflow UI
@@ -77,7 +79,7 @@ with DAG(
             )""",
     )
 ```
-
+<a name="connector-parameters"></a>
 ## Connector Parameters
 
 When you create a connection in Airflow UI (Admin → Connections), use the following fields:
@@ -92,6 +94,7 @@ When you create a connection in Airflow UI (Admin → Connections), use the foll
 
 
 ## Examples
+<a name="1-iris-raw-sql-demo"></a>
 ### 1. IRIS Raw SQL Demo
 ```python
 # dags/01_IRIS_Raw_SQL_Demo.py
@@ -128,7 +131,7 @@ with DAG(
 
     create_table >> insert >> select
 ```
-
+<a name="2-iris-orm-demo"></a>
 ### 2. IRIS ORM Demo
 Uses SQLAlchemy + pandas with the only known reliable method for bulk inserts into IRIS.
 ```
@@ -206,6 +209,7 @@ with DAG(
 
     orm_create >> orm_read
 ```
+<a name="3-synthetic-sales-pipeline"></a>
 ### 3. Synthetic Sales Pipeline
 Generate realistic sales data and load efficiently.
 
