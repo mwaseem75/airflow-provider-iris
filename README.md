@@ -1,5 +1,5 @@
 <h1>Intersystems IRIS provider for Apache Airflow</h1>
-<img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/airflowlogo.png" />
+<img width="630" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/airflowlogo.png" />
 
 [![PyPI version](https://badge.fury.io/py/airflow-provider-iris.svg)](https://badge.fury.io/py/airflow-provider-iris)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/airflow-provider-iris)](https://pypistats.org/packages/airflow-provider-iris)
@@ -18,7 +18,7 @@ Designed for reliability and ease of use, this provider helps data engineers and
 * ✔️ Examples for real-world ETL patterns
 
 ### Application Layout
-<img width="1918" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/mainscreenshot.png" />
+<img width="1918" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/mainscreenshot.png" />
 
 ---
 
@@ -39,7 +39,7 @@ Go to Admin → Connections → Add Connection
 * Password: **Password**
 * Port : **IRIS Superserver Port**
 * Namespace : **Namespace**
-<img width="1127" alt="image" src="https://raw.githubusercontent.com/mwaseem75/airflow-provider-iris/main/images/connection.png" />
+<img width="1127" alt="image" src="https://raw.githubusercontent.com/mwaseem75/streamlitLLM/main/images/connection.png" />
 
 Use your InterSystems IRIS connection by setting the `iris_conn_id` parameter in any of the provided operators.
 
