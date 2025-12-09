@@ -9,14 +9,14 @@
 ---
 ## Table of Contents
 
-- [Overview](#1overview)
-- [Installation](#1installation)
-- [Quick Start](#1quick-start)
-- [Connector Parameters](#1connector-parameters)
-- [Examples](#1examples)
-  - [01_IRIS_Raw_SQL_Demo](#11-iris-raw-sql-demo)
-  - [02_IRIS_ORM_Demo](#12-iris-orm-demo)
-  - [03_IRIS_Load_Synthetic_Data_Demo](#13-synthetic-sales-pipeline)
+- Overview
+- Installation
+- Quick Start
+- IrisSQLOperator Parameters
+- Examples
+  - 01_IRIS_Raw_SQL_Demo
+  - 02_IRIS_ORM_Demo
+  - 03_IRIS_Load_Synthetic_Data_Demo
 
 ---
 <a name="overview"></a>
@@ -79,9 +79,7 @@ with DAG(
     )
 ```
 <a name="connector-parameters"></a>
-## Connector Parameters
-
-When you create a connection in Airflow UI (Admin → Connections), use the following fields:
+## IrisSQLOperator Parameters
 
 | Parameter       | Description                                                            | Type / Default         | Required | 
 |-----------------|------------------------------------------------------------------------|------------------------|----------|
@@ -93,108 +91,163 @@ When you create a connection in Airflow UI (Admin → Connections), use the foll
 
 
 ## Examples
-<a name="1-iris-raw-sql-demo"></a>
 ### 1. IRIS Raw SQL Demo
+Usage of RAW SQL statements
 ```python
 # dags/01_IRIS_Raw_SQL_Demo.py
 from datetime import datetime
 from airflow import DAG
 from airflow_provider_iris.operators.iris_operator import IrisSQLOperator
 
+# ---------------------------------------------------------------------
+# Example DAG showing how to run raw SQL statements on InterSystems IRIS
+# using the IrisSQLOperator included in the provider.
+# ---------------------------------------------------------------------
+
 with DAG(
     dag_id="01_IRIS_Raw_SQL_Demo",
     start_date=datetime(2025, 12, 1),
-    schedule=None,
+    schedule=None,        # Run manually – no recurring schedule
     catchup=False,
     tags=["iris-contest"],
 ) as dag:
     
+    # Create a simple table to store demo entries.
+    # IF NOT EXISTS ensures the DAG can be re-run without errors.
     create_table = IrisSQLOperator(
         task_id="create_table",
-        sql="""CREATE TABLE IF NOT EXISTS Test.AirflowDemo (
-               ID INTEGER IDENTITY PRIMARY KEY,
-               Message VARCHAR(200),
-               RunDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""",
+        sql="""
+            CREATE TABLE IF NOT EXISTS AirflowDemo.Test (
+                ID INTEGER IDENTITY PRIMARY KEY,
+                Message VARCHAR(200),
+                RunDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """,
     )
 
+    # Insert a sample row into the table.
+    # This demonstrates a basic INSERT operation using the operator.
     insert = IrisSQLOperator(
         task_id="insert_row",
-        sql="INSERT INTO Test.AirflowDemo (Message) VALUES ('Hello from raw SQL operator')",
+        sql="""
+            INSERT INTO AirflowDemo.Test (Message)
+            VALUES ('Hello from raw SQL operator')
+        """,
     )
 
+    # Retrieve all rows so the results appear in the Airflow logs.
+    # Useful to confirm end-to-end connectivity with IRIS.
     select = IrisSQLOperator(
         task_id="select_rows",
-        sql="SELECT ID, Message, RunDate FROM Test.AirflowDemo ORDER BY ID DESC",
+        sql="""
+            SELECT ID, Message, RunDate
+            FROM AirflowDemo.Test
+            ORDER BY ID DESC
+        """,
     )
 
+    # Task order: create table → insert row → select rows
     create_table >> insert >> select
 ```
 <a name="2-iris-orm-demo"></a>
 ### 2. IRIS ORM Demo
 Uses SQLAlchemy + pandas with the only known reliable method for bulk inserts into IRIS.
 ```
-# dags/example_sqlalchemy_dag.py
+# dags/02_IRIS_ORM_Demo.py
 
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 import pandas as pd
+import numpy as np
 
-# Import your hook and model
+# Import IRIS hook and SQLAlchemy components
 from airflow_provider_iris.hooks.iris_hook import IrisHook
 from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+# ---------------------------------------------------------------------
+# ORM MODEL
+# Defines the structure of the AirflowDemo.ORMSales table in IRIS.
+# ---------------------------------------------------------------------
 class SalesRecord(Base):
-    __tablename__ = "SalesRecord"
-    __table_args__ = {"schema": "Test"}
+    __tablename__ = "ORMSales"
+    __table_args__ = {"schema": "AirflowDemo"}
 
     id        = Column(Integer, primary_key=True)
     region    = Column(String(50))
     amount    = Column(Float)
     sale_date = Column(DateTime)
 
+
+# ---------------------------------------------------------------------
+# TASK 1: Create table and insert synthetic sample records.
+# Uses pandas.to_sql() with chunksize=1 → most consistent for IRIS.
+# ---------------------------------------------------------------------
 def create_and_insert_orm(**context):
+    # If you use a non-default connection → ALWAYS pass iris_conn_id explicitly
+    # e.g hook = IrisHook(iris_conn_id="iris_Connection_ID")
     hook = IrisHook()
     engine = hook.get_engine()
 
-    # Create table if not exists
+    # Ensure the table exists
     Base.metadata.create_all(engine)
 
-    # THIS IS THE ONLY METHOD THAT WORKS RELIABLY WITH IRIS RIGHT NOW
-    data = [
-        {"region": "Europe",        "amount": 12500.50, "sale_date": "2025-12-01"},
-        {"region": "Asia",          "amount": 8900.00,  "sale_date": "2025-12-02"},
-        {"region": "North America", "amount": 56700.00, "sale_date": "2025-12-03"},
-        {"region": "Africa",        "amount": 34200.00, "sale_date": "2025-12-03"},
-    ]
-    df = pd.DataFrame(data)
-    df["sale_date"] = pd.to_datetime(df["sale_date"])
+    # ---- Generate synthetic generic sample data ----
+    num_records = 5
+    regions = [f"Region {i}" for i in range(1, num_records + 1)]
 
-    # pandas.to_sql with single-row inserts → IRIS accepts this perfectly
+    sample_data = [
+        {
+            "region": region,
+            "amount": round(np.random.uniform(5000, 50000), 2),
+            "sale_date": pd.Timestamp("2025-12-01") + pd.Timedelta(days=i)
+        }
+        for i, region in enumerate(regions)
+    ]
+
+    df = pd.DataFrame(sample_data)
+
+    # Insert rows → IRIS requires single-batch inserts for reliability
     df.to_sql(
-        name="SalesRecord",
+        name="ORMSales",
         con=engine,
-        schema="Test",
+        schema="AirflowDemo",
         if_exists="append",
         index=False,
-        method="multi",           # still fast
-        chunksize=1               # ← THIS IS THE MAGIC LINE
+        method="multi",
+        chunksize=1,   # key setting for IRIS compatibility
     )
-    print(f"Successfully inserted {len(df)} rows using pandas.to_sql() (chunksize=1)")
+
+    print(f"Inserted {len(df)} generated rows into AirflowDemo.ORMSales")
 
 
+# ---------------------------------------------------------------------
+# TASK 2: Query back data and print rows in Airflow logs.
+# ---------------------------------------------------------------------
 def query_orm(**context):
     hook = IrisHook()
     engine = hook.get_engine()
-    df = pd.read_sql("SELECT * FROM Test.SalesRecord ORDER BY id", engine)
+
+    df = pd.read_sql(
+        "SELECT * FROM AirflowDemo.ORMSales ORDER BY id",
+        engine
+    )
+
     for _, r in df.iterrows():
-        print(f"ORM → {int(r.id):>3} | {r.region:<15} | ${r.amount:>10,.2f} | {r.sale_date.date()}")
+        print(
+            f"ORM → {int(r.id):>3} | "
+            f"{r.region:<15} | "
+            f"${r.amount:>10,.2f} | "
+            f"{r.sale_date.date()}"
+        )
 
 
+# ---------------------------------------------------------------------
+# DAG DEFINITION
+# ---------------------------------------------------------------------
 with DAG(
     dag_id="02_IRIS_ORM_Demo",
     start_date=datetime(2025, 12, 1),
@@ -203,8 +256,15 @@ with DAG(
     tags=["iris-contest", "orm"],
 ) as dag:
 
-    orm_create = PythonOperator(task_id="orm_create_and_insert", python_callable=create_and_insert_orm)
-    orm_read   = PythonOperator(task_id="orm_read",               python_callable=query_orm)
+    orm_create = PythonOperator(
+        task_id="orm_create_and_insert",
+        python_callable=create_and_insert_orm,
+    )
+
+    orm_read = PythonOperator(
+        task_id="orm_read",
+        python_callable=query_orm,
+    )
 
     orm_create >> orm_read
 ```
@@ -213,6 +273,8 @@ with DAG(
 Generate realistic sales data and load efficiently.
 
 ```
+# dags/03_IRIS_Load_Synthetic_Data_Demo
+
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -224,9 +286,13 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+# ---------------------------------------------------------------------
+# ORM model representing a generic sales table in the "AirflowDemo" schema.
+# Reusable for both table creation and data insertion.
+# ---------------------------------------------------------------------
 class SalesRecord(Base):
-    __tablename__ = "SalesRecord"
-    __table_args__ = {"schema": "Test"}
+    __tablename__ = "BulkSales"
+    __table_args__ = {"schema": "AirflowDemo"}
 
     id        = Column(Integer, primary_key=True)
     region    = Column(String(50))
@@ -234,25 +300,32 @@ class SalesRecord(Base):
     sale_date = Column(DateTime)
 
 
-# ----------- SYNTHETIC DATA GENERATION -----------
+# ---------------------------------------------------------------------
+# Generate synthetic sales data for testing or demo purposes.
+# Supports dynamic number of rows and produces realistic random data.
+# ---------------------------------------------------------------------
 def generate_synthetic_sales(num_rows=500):
-    """Create synthetic sales data for testing."""
+    """Create synthetic sales data as a pandas DataFrame."""
     
     regions = [
         "North America", "South America", "Europe",
         "Asia-Pacific", "Middle East", "Africa"
     ]
 
-    # Randomly pick regions
+    # Randomly pick a region for each row
     region_data = np.random.choice(regions, size=num_rows)
 
-    # Generate synthetic amounts between 10k and 120k
+    # Random sales amounts between 10k and 120k
     amounts = np.random.uniform(10000, 120000, size=num_rows).round(2)
 
-    # Generate random dates within last 30 days
+    # Random sale dates within last 30 days
     start_date = datetime(2025, 11, 1)
-    sale_dates = [start_date + timedelta(days=int(x)) for x in np.random.randint(0, 30, size=num_rows)]
+    sale_dates = [
+        start_date + timedelta(days=int(x)) 
+        for x in np.random.randint(0, 30, size=num_rows)
+    ]
 
+    # Construct a DataFrame
     df = pd.DataFrame({
         "region": region_data,
         "amount": amounts,
@@ -262,23 +335,41 @@ def generate_synthetic_sales(num_rows=500):
     return df
 
 
-# ----------- AIRFLOW TASK FUNCTION -----------
-def bulk_load_from_csv(**context):
+# ---------------------------------------------------------------------
+# Airflow task: bulk load synthetic sales data into IRIS.
+# ---------------------------------------------------------------------
+def bulk_load_synthetic_sales(**context):
 
-    df = generate_synthetic_sales(num_rows=200)   # Change number as needed
+    # Generate synthetic dataset
+    df = generate_synthetic_sales(num_rows=200)
 
+    # Create SQLAlchemy engine via IRIS hook
+    # If you use a non-default connection → ALWAYS pass iris_conn_id explicitly
+    # e.g hook = IrisHook(iris_conn_id="iris_Connection_ID")
     hook = IrisHook()
     engine = hook.get_engine()
 
+    # Ensure table exists
     Base.metadata.create_all(engine)
 
-    df.to_sql("SalesRecord", con=engine, schema="Test", if_exists="append", index=False)
-    print(f"Bulk loaded {len(df)} synthetic rows via pandas.to_sql()")
+    # Bulk insert into IRIS
+    df.to_sql(
+        "BulkSales",
+        con=engine,
+        schema="AirflowDemo",
+        if_exists="append",
+        index=False
+    )
+
+    print(f"Bulk loaded {len(df)} synthetic rows into AirflowDemo.BulkSales")
 
 
-# ----------- DAG DEFINITION -----------
+# ---------------------------------------------------------------------
+# DAG definition
+# Demonstrates ETL-style bulk load of synthetic sales data into IRIS.
+# ---------------------------------------------------------------------
 with DAG(
-    dag_id="03_IRIS_Load_CSV_Synthetic_Demo",
+    dag_id="03_IRIS_Load_Synthetic_Data_Demo",
     start_date=datetime(2025, 12, 1),
     schedule=None,
     catchup=False,
@@ -286,8 +377,8 @@ with DAG(
 ) as dag:
 
     bulk_task = PythonOperator(
-        task_id="bulk_load_synthetic_to_iris",
-        python_callable=bulk_load_from_csv
+        task_id="bulk_load_synthetic_sales",
+        python_callable=bulk_load_synthetic_sales
     )
 
 ```
