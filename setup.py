@@ -1,6 +1,6 @@
 from setuptools import setup
 from pathlib import Path
-__version__ = "0.2.3"
+__version__ = "0.2.8"
 
 
 this_directory = Path(__file__).parent
