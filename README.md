@@ -13,11 +13,14 @@
 - Installation
 - Quick Start
 - IrisSQLOperator Parameters
-- Examples
+- SQLOperator Examples
   - 01_IRIS_Raw_SQL_Demo
   - 02_IRIS_ORM_Demo
   - 03_IRIS_Load_Synthetic_Data_Demo
-
+- IrisSensor
+- IrisSensor Example
+  - 04_IRIS_Daily_Sales_Report_Sensor.py
+    
 ---
 <a name="overview"></a>
 ## Overview
@@ -90,7 +93,7 @@ with DAG(
 | ****kwargs**    | Airflow BaseOperator arguments                                         | --                     | No       |
 
 
-## Examples
+## SQLOperator Examples
 ### 1. IRIS Raw SQL Demo
 Usage of RAW SQL statements
 ```python
@@ -381,6 +384,170 @@ with DAG(
         python_callable=bulk_load_synthetic_sales
     )
 
+```
+
+## IrisSensor 
+
+The `IrisSensor` is a purpose-built Airflow sensor that repeatedly runs a SQL query against IRIS until a condition is satisfied.  
+It solves the most common real-world need when integrating Airflow with IRIS:  
+**“Don’t start my downstream jobs until the data has actually landed in IRIS.”**
+
+### Why you’ll use it every day
+- Wait for daily bulk loads (CSV, EDI, API, replication, etc.)
+- Wait for upstream systems to flip a status flag
+- Wait for a minimum number of rows in a staging table
+- Wait for a specific value (e.g., `Status = 'COMPLETED'`)
+- Wait for stored procedures or class methods that write results to a table
+
+### Key Features
+- Full Jinja templating support (`{{ ds }}`, `{{ tomorrow_ds }}`, custom macros)
+- Smart numeric tolerance – perfect for “at least ~N rows” checks
+- Safe parameter binding via `params=` (strongly recommended with IRIS to avoid date-format headaches)
+- `mode="reschedule"` by default → doesn’t block workers during long waits
+- Works out-of-the-box with the same `iris` connection type used by `IrisSQLOperator`
+
+## IrisSensor Parameters
+
+The `IrisSensor` repeatedly executes a SQL query against InterSystems IRIS until the result meets the defined condition.  
+Ideal for waiting on bulk loads, external feeds, status flags, or minimum row-count thresholds.
+
+| Parameter            | Description                                                                                          | Type / Default                  | Required |
+|----------------------|------------------------------------------------------------------------------------------------------|----------------------------------|----------|
+| **sql**              | SQL query to execute (supports Airflow templating with `{{ ds }}`, `{{ tomorrow_ds }}`, etc.)       | `str`                            | Yes      |
+| **iris_conn_id**     | Connection ID defined in Airflow (type = `iris`)                                                     | `str` / `iris_default`           | No       |
+| **expected_result**  | Value that the first column of the result must match.<br>• `None` → succeed on any non-empty row<br>• `int`/`str` → exact match<br>• numeric → tolerance applies | `Any` / `None`                   | No       |
+| **tolerance**        | Allowed +/- deviation when comparing numeric values (only used with `expected_result`)              | `float` / `None`                 | No       |
+| **poke_interval**    | Seconds to wait between pokes                                                                        | `float` / `300.0` (5 min)        | No       |
+| **timeout**          | Maximum seconds the sensor may run before failing                                                    | `float` / `6 * 3600` (6 hours)   | No       |
+| **mode**             | `"poke"` (block worker) or `"reschedule"` (free worker slot – recommended for long waits)            | `str` / `"reschedule"`           | No       |
+| **params**           | Optional named parameters for the query (highly recommended with IRIS to avoid date-format issues)  | `dict` / `None`                  | No       |
+| **task_id**          | Unique task identifier in the DAG                                                                    | `str`                            | Yes      |
+| ****kwargs**         | Additional arguments passed to Airflow’s `BaseSensorOperator`                                        | –                                | No       |
+
+### Common Usage Examples
+
+```python
+# Wait for any row (e.g. flag table)
+IrisSensor(task_id="wait_for_flag", sql="SELECT 1 FROM ETL.Status WHERE RunDate = '{{ ds }}' AND Status = 'READY'")
+
+# Wait for at least ~150 rows today
+IrisSensor(
+    task_id="wait_for_bulk_load",
+    sql="SELECT COUNT(*) FROM AirflowDemo.BulkSales WHERE CAST(entry_date AS DATE) = '{{ ds }}'",
+    expected_result=150,
+    tolerance=50,
+)
+
+# Wait using safe parameters (recommended with IRIS)
+IrisSensor(
+    task_id="wait_for_today_data",
+    sql="SELECT COUNT(*) FROM AirflowDemo.BulkSales WHERE entry_date >= :start AND entry_date < :end",
+    params={"start": "{{ ds }} 00:00:00", "end": "{{ tomorrow_ds }} 00:00:00"},
+    expected_result=100,
+)
+```
+## IrisSensor Example
+#### 04_IRIS_Daily_Sales_Report_Sensor.py
+```
+# dags/04_IRIS_Daily_Sales_Report_Sensor.py
+#
+# Example DAG that shows the full power of the airflow-provider-iris package:
+#   • IrisSensor  – waits until the daily bulk load has finished
+#   • IrisSQLOperator – creates table + truncates + inserts summary data
+#
+# This DAG depends on the bulk-load DAG (03_IRIS_Load_Synthetic_Data_Demo)
+# which populates AirflowDemo.BulkSales with ~200 synthetic rows per day.
+
+from datetime import datetime
+from airflow import DAG
+
+# Provider classes – install with: pip install airflow-provider-iris
+from airflow_provider_iris.sensors.iris_sensor import IrisSensor
+from airflow_provider_iris.operators.iris_sql_operator import IrisSQLOperator
+
+
+with DAG(
+    dag_id="04_IRIS_Daily_Sales_Report_Sensor",
+    schedule="0 5 * * *",                 # Run every day at 05:00 AM (after bulk load expected)
+    start_date=datetime(2025, 12, 1),
+    catchup=False,                         # Don't backfill historic dates
+    tags=["iris", "sales", "demo", "reporting"],
+    doc_md=__doc__,                        # Shows this header comment in the UI
+) as dag:
+
+    # ------------------------------------------------------------------
+    # 1. Wait until today's bulk load has delivered enough rows
+    # ------------------------------------------------------------------
+    wait_for_bulk_load = IrisSensor(
+        task_id="wait_for_today_bulk_load",
+        sql="""
+            SELECT COUNT(*) 
+            FROM AirflowDemo.BulkSales 
+            WHERE CAST(entry_date AS DATE) = '{{ ds }}'
+        """,
+        expected_result=200,      # We normally get ~200 rows from the bulk load
+        tolerance=80,             # Accept anything from ~120 upwards
+        poke_interval=60,         # Check every minute
+        timeout=6 * 3600,         # Give up after 6 hours if data never arrives
+        mode="reschedule",        # Free the worker slot while waiting
+    )
+
+    # ------------------------------------------------------------------
+    # 2. Make sure the summary table exists (idempotent – safe to run every day)
+    # ------------------------------------------------------------------
+    create_summary_table = IrisSQLOperator(
+        task_id="create_summary_table_if_not_exists",
+        sql="""
+            CREATE TABLE IF NOT EXISTS AirflowDemo.RegionalSummary (
+                ReportDate     DATE,
+                Region         VARCHAR(50),
+                Transactions   INTEGER,
+                TotalRevenue   DECIMAL(16,2),
+                AvgDealSize    DECIMAL(16,2)
+            )
+        """,
+    )
+
+    # ------------------------------------------------------------------
+    # 3. Remove any previous summary for today (in case we re-run the DAG)
+    # ------------------------------------------------------------------
+    truncate_today = IrisSQLOperator(
+        task_id="truncate_today_data",
+        sql="""
+            DELETE FROM AirflowDemo.RegionalSummary 
+            WHERE ReportDate = TO_DATE('{{ ds }}', 'YYYY-MM-DD')
+        """,
+    )
+
+    # ------------------------------------------------------------------
+    # 4. Build the regional sales summary for the execution date
+    #    TO_DATE() is required – IRIS does not implicitly convert 'YYYY-MM-DD' strings to DATE
+    # ------------------------------------------------------------------
+    insert_today_summary = IrisSQLOperator(
+        task_id="insert_today_regional_summary",
+        sql="""
+            INSERT INTO AirflowDemo.RegionalSummary
+            SELECT 
+                TO_DATE('{{ ds }}', 'YYYY-MM-DD') AS ReportDate,
+                region,
+                COUNT(*)                  AS Transactions,
+                SUM(amount)               AS TotalRevenue,
+                AVG(amount)               AS AvgDealSize
+            FROM AirflowDemo.BulkSales
+            WHERE CAST(entry_date AS DATE) = '{{ ds }}'
+            GROUP BY region
+        """,
+    )
+
+    # ------------------------------------------------------------------
+    # Task dependencies – Airflow executes in this exact order
+    # ------------------------------------------------------------------
+    (
+        wait_for_bulk_load
+        >> create_summary_table
+        >> truncate_today
+        >> insert_today_summary
+    )
 ```
 
 
