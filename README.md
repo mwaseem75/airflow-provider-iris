@@ -31,7 +31,7 @@ Designed for reliability and ease of use, this provider helps data engineers and
 ### Features
 * ✔️ `IrisHook` – for managing IRIS connections
 * ✔️ `IrisSQLOperator` – for running SQL queries
-* ✔️ IrisSensor - Wait for IRIS data readiness (row counts, status flags, bulk load completion)
+* ✔️ `IrisSensor` - Wait for IRIS data readiness (row counts, status flags, bulk load completion)
 * ✔️ Support for both SELECT/CTE and DML statements
 * ✔️ Native Airflow connection UI customization
 * ✔️ Examples for real-world ETL patterns
