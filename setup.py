@@ -1,11 +1,8 @@
 from setuptools import setup
 from pathlib import Path
-__version__ = "0.2.8"
-
-
+__version__ = "0.2.9"
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
-
 """Perform the package airflow-provider-iris setup."""
 setup(
     name="airflow-provider-iris",
@@ -22,9 +19,14 @@ setup(
     packages=[
         "airflow_provider_iris",
         "airflow_provider_iris.hooks",
-        "airflow_provider_iris.operators",       
+        "airflow_provider_iris.operators",
     ],
-    install_requires=["apache-airflow>=2.0", "sqlalchemy-iris", "pandas"],
+    install_requires=[
+        "apache-airflow>=2.0",
+        "sqlalchemy-iris==0.10.5",
+        "SQLAlchemy<2",
+        "pandas",
+    ],
     setup_requires=["setuptools", "wheel"],
     author="Muhammad Waseem",
     author_email="muhammadwas@outlook.com",
