@@ -551,6 +551,8 @@ with DAG(
         >> insert_today_summary
     )
 ```
-
+For detailed documentation, usage examples, and a complete list of operators/hooks, see the published provider package: one image
+[![one](https://img.shields.io/badge/PyPI%20Package-airflow%20provider%20iris-yellowgreen)](https://pypi.org/project/airflow-provider-iris/)
+<img width="1609"  alt="image" src="https://github.com/user-attachments/assets/cbc0151a-18e4-4ed1-87e2-cf45208f5067" />
 
     
